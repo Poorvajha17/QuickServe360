@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:background="@drawable/blue_purple_bg"
+    tools:context=".Login">
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="24dp"
+        app:cardCornerRadius="24dp"
+        app:cardElevation="12dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="24dp"
+            android:gravity="center_horizontal">
+
+            <!-- Title -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Login"
+                android:textSize="28sp"
+                android:textStyle="bold"
+                android:textColor="@color/deep_purple"
+                android:layout_marginBottom="24dp"/>
+
+            <!-- Email -->
+            <EditText
+                android:id="@+id/login_email"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:hint="Email"
+                android:background="@drawable/custom_edittext"
+                android:drawableStart="@drawable/baseline_account_circle_24"
+                android:drawablePadding="8dp"
+                android:padding="10dp"
+                android:textColor="@color/black"
+                android:layout_marginBottom="16dp"/>
+
+            <!-- Password -->
+            <EditText
+                android:id="@+id/password_toggle"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:hint="Password"
+                android:background="@drawable/custom_edittext"
+                android:drawableStart="@drawable/baseline_lock_24"
+                android:drawablePadding="8dp"
+                android:padding="10dp"
+                android:textColor="@color/black"
+                android:layout_marginBottom="24dp"/>
+
+            <!-- Sign Up Button -->
+            <Button
+                android:id="@+id/login_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Login"
+                android:textSize="18sp"
+                android:padding="14dp"
+                android:backgroundTint="@color/deep_purple"
+                android:textColor="@android:color/white"
+                app:cornerRadius="20dp"
+                android:layout_marginBottom="16dp"/>
+
+            <!-- Redirect to Login -->
+            <TextView
+                android:id="@+id/signupRedirectText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Not yet registered? Signup"
+                android:textColor="@color/black"
+                android:textSize="16sp"
+                android:layout_marginTop="8dp"/>
+
+        </LinearLayout>
+
+    </androidx.cardview.widget.CardView>
+
+</LinearLayout>
