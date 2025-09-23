@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:background="@drawable/blue_purple_bg"
+    tools:context=".PreferencesActivity">
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="24dp"
+        app:cardCornerRadius="24dp"
+        app:cardElevation="12dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="24dp"
+            android:gravity="center_horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Preferences"
+                android:textSize="28sp"
+                android:textStyle="bold"
+                android:textColor="@color/deep_purple"
+                android:layout_marginBottom="24dp" />
+
+            <!-- Cuisine -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Select Cuisine"
+                android:textColor="@color/black"
+                android:textStyle="bold"
+                android:layout_marginBottom="6dp"/>
+            <Spinner
+                android:id="@+id/spinnerCuisine"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:background="@drawable/custom_edittext"
+                android:layout_marginBottom="16dp"/>
+
+            <!-- Budget -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Budget"
+                android:textColor="@color/black"
+                android:textStyle="bold"
+                android:layout_marginBottom="6dp"/>
+            <EditText
+                android:id="@+id/editBudget"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:hint="Enter Budget (₹)"
+                android:inputType="number"
+                android:background="@drawable/custom_edittext"
+                android:padding="10dp"
+                android:textColor="@color/black"
+                android:layout_marginBottom="16dp"/>
+
+            <!-- Distance -->
+            <TextView
+                android:id="@+id/txtDistance"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Distance: 5 km"
+                android:textColor="@color/black"
+                android:textStyle="bold"
+                android:layout_marginBottom="6dp"/>
+            <SeekBar
+                android:id="@+id/seekDistance"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:max="50"
+                android:progress="5"
+                android:layout_marginBottom="16dp"/>
+
+            <!-- Food Type -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Food Preference"
+                android:textColor="@color/black"
+                android:textStyle="bold"
+                android:layout_marginBottom="6dp"/>
+            <RadioGroup
+                android:id="@+id/radioGroupFood"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:layout_marginBottom="16dp">
+                <RadioButton
+                    android:id="@+id/radioVeg"
+                    android:text="Veg"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/black"/>
+                <RadioButton
+                    android:id="@+id/radioNonVeg"
+                    android:text="Non-Veg"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/black"
+                    android:layout_marginStart="20dp"/>
+            </RadioGroup>
+
+            <!-- Save Button -->
+            <Button
+                android:id="@+id/btnSavePreferences"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Save Preferences"
+                android:textSize="18sp"
+                android:padding="14dp"
+                android:backgroundTint="@color/deep_purple"
+                android:textColor="@android:color/white"
+                app:cornerRadius="20dp"
+                android:layout_marginTop="8dp" />
+
+        </LinearLayout>
+
+    </androidx.cardview.widget.CardView>
+
+</LinearLayout>
