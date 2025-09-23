@@ -1,3 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">QuickServe360</string>
+
+    <!-- Spinner options -->
+    <string-array name="cuisine_options">
+        <item>Indian</item>
+        <item>Chinese</item>
+        <item>Italian</item>
+        <item>Mexican</item>
+    </string-array>
+
+    <!-- Other strings -->
+    <string name="preferences_title">Preferences</string>
+    <string name="select_cuisine">Select Cuisine</string>
+    <string name="budget_hint">Enter Budget (₹)</string>
+    <string name="food_preference">Food Preference</string>
+    <string name="save_preferences">Save Preferences</string>
 </resources>
