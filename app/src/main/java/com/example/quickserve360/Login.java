@@ -1,5 +1,6 @@
 package com.example.quickserve360;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Patterns;
 import android.view.View;
@@ -8,12 +9,11 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import android.content.Intent;
-
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -25,7 +25,7 @@ public class Login extends AppCompatActivity {
     private FirebaseAuth auth;
     private EditText loginEmail, loginPassword;
     private Button loginButton;
-    private TextView signupRedirectText;
+    private TextView signupRedirectText, forgotPassword;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,31 +36,34 @@ public class Login extends AppCompatActivity {
         auth = FirebaseAuth.getInstance();
 
         loginEmail = findViewById(R.id.login_email);
-        loginPassword = findViewById(R.id.password_toggle);
+        loginPassword = findViewById(R.id.login_password); // updated id
         loginButton = findViewById(R.id.login_button);
         signupRedirectText = findViewById(R.id.signupRedirectText);
+        forgotPassword = findViewById(R.id.forgotPassword);
 
+        // 🔹 Login button click
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 String email = loginEmail.getText().toString();
                 String pass = loginPassword.getText().toString();
 
-                if(!email.isEmpty() && Patterns.EMAIL_ADDRESS.matcher(email).matches()){
-                    if(!pass.isEmpty()){
-                        auth.signInWithEmailAndPassword(email,pass).addOnSuccessListener(new OnSuccessListener<AuthResult>() {
-                            @Override
-                            public void onSuccess(AuthResult authResult) {
-                                Toast.makeText(Login.this, "Login Successful", Toast.LENGTH_SHORT).show();
-                                startActivity(new Intent(Login.this, MainActivity.class));
-                                finish();
-                            }
-                        }).addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                Toast.makeText(Login.this, "Login Failed", Toast.LENGTH_SHORT).show();
-                            }
-                        });
+                if (!email.isEmpty() && Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                    if (!pass.isEmpty()) {
+                        auth.signInWithEmailAndPassword(email, pass)
+                                .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
+                                    @Override
+                                    public void onSuccess(AuthResult authResult) {
+                                        Toast.makeText(Login.this, "Login Successful", Toast.LENGTH_SHORT).show();
+                                        startActivity(new Intent(Login.this, MainActivity.class));
+                                        finish();
+                                    }
+                                }).addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        Toast.makeText(Login.this, "Login Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                    }
+                                });
                     } else {
                         loginPassword.setError("Password cannot be empty");
                     }
@@ -72,13 +75,36 @@ public class Login extends AppCompatActivity {
             }
         });
 
-        signupRedirectText .setOnClickListener(new View.OnClickListener() {
+        // 🔹 Forgot Password
+        forgotPassword.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(Login.this, Signup.class));
+                String email = loginEmail.getText().toString();
+
+                if (email.isEmpty()) {
+                    loginEmail.setError("Enter your registered email");
+                } else {
+                    auth.sendPasswordResetEmail(email)
+                            .addOnSuccessListener(unused ->
+                                    Toast.makeText(Login.this, "Reset link sent to your email", Toast.LENGTH_SHORT).show()
+                            )
+                            .addOnFailureListener(e ->
+                                    Toast.makeText(Login.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show()
+                            );
+                }
             }
         });
 
+        // 🔹 Redirect to Signup
+        signupRedirectText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(Login.this, Signup.class));
+                finish(); // optional: prevents back navigation to Login
+            }
+        });
+
+        // Insets handling
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
