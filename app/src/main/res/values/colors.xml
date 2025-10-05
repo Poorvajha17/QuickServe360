@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Your existing colors -->
     <color name="deep_purple">#5f0d79</color>
     <color name="light_blue">#73c8e0</color>
     <color name="pink">#ea6b89</color>
@@ -9,4 +10,28 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
+    <color name="red">#FF0000</color>
+    <color name="blue_grey">#98AFC7</color>
+    <color name="grey">#D5D2D2</color>
+    <color name="green">#4CAF50</color>
+
+
+    <!-- New colors for HomePage -->
+    <color name="colorPrimary">#FF6B6B</color>
+    <color name="colorPrimaryDark">#E85555</color>
+    <color name="colorAccent">#FF6B6B</color>
+
+    <color name="gray">#808080</color>
+    <color name="light_gray">#B0B0B0</color>
+    <color name="dark_text">#2C3E50</color>
+
+    <!-- Category Colors -->
+    <color name="purple_category">#9B88ED</color>
+    <color name="blue_category">#66C9DD</color>
+    <color name="pink_category">#FF9999</color>
+    <color name="green_category">#77DD88</color>
+    <color name="red_category">#DD6699</color>
+    <color name="mint_category">#88BB88</color>
+    <color name="violet_category">#CC77CC</color>
+    <color name="indigo_category">#99AADD</color>
 </resources>

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".LocationSelectionActivity">
+
+    <!-- Full-screen map background -->
+
+    <!-- White rounded box at the bottom containing a dropdown and a button -->
+    <ImageView
+        android:id="@+id/mapImage"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:contentDescription="Map background"
+        android:scaleType="centerCrop"
+        android:src="@drawable/map_image"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <LinearLayout
+        android:id="@+id/bottomContainer"
+        android:layout_width="385dp"
+        android:layout_height="167dp"
+        android:layout_margin="16dp"
+        android:background="@drawable/white_rounded_box"
+        android:elevation="8dp"
+        android:orientation="horizontal"
+        android:padding="12dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <!-- Dropdown (Spinner) -->
+        <Spinner
+            android:id="@+id/spinnerLocation"
+            android:layout_width="0dp"
+            android:layout_height="91dp"
+            android:layout_weight="1"
+            android:spinnerMode="dropdown" />
+
+        <!-- Submit button -->
+        <Button
+            android:id="@+id/btnSubmit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:text="Go" />
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

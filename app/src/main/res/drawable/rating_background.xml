@@ -1,0 +1,18 @@
+<!-- res/drawable/rating_background.xml -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+
+    <!-- Rounded corners for pill look -->
+    <corners android:radius="20dp" />
+
+    <!-- Semi-transparent dark background so text/icon is visible on image -->
+    <solid android:color="#66000000" />
+
+    <!-- Optional padding (if you want spacing inside for text/icons) -->
+    <padding
+        android:left="8dp"
+        android:top="4dp"
+        android:right="8dp"
+        android:bottom="4dp" />
+
+</shape>

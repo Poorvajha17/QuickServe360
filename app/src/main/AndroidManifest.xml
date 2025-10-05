@@ -15,6 +15,48 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.QuickServe360">
         <activity
+            android:name=".CartAdapter"
+            android:exported="false" />
+        <activity
+            android:name=".CartActivity"
+            android:exported="false" />
+        <activity
+            android:name=".CartItem"
+            android:exported="false" />
+        <activity
+            android:name=".RestaurantAdapter"
+            android:exported="false" />
+        <activity
+            android:name=".PreferencesRestaurantsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".CategoryRestaurantsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".DishAdapter"
+            android:exported="false" />
+        <activity
+            android:name=".RestaurantDishesActivity"
+            android:exported="false" />
+        <activity
+            android:name=".LocationSelectionActivity"
+            android:exported="false" />
+        <activity
+            android:name=".AllRestaurantsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".RestaurantGridAdapter"
+            android:exported="false" />
+        <activity
+            android:name=".CategoryAdapter"
+            android:exported="false" />
+        <activity
+            android:name=".BestRestaurantsAdapter"
+            android:exported="false" />
+        <activity
+            android:name=".Restaurant"
+            android:exported="false" />
+        <activity
             android:name=".PreferencesActivity"
             android:exported="false" />
         <activity

@@ -2,6 +2,13 @@
 <resources>
     <string name="app_name">QuickServe360</string>
 
+    <!-- Your existing Preferences strings -->
+    <string name="preferences_title">Preferences</string>
+    <string name="select_cuisine">Select Cuisine</string>
+    <string name="budget_hint">Enter Budget (₹)</string>
+    <string name="food_preference">Food Preference</string>
+    <string name="save_preferences">Save Preferences</string>
+
     <!-- Spinner options -->
     <string-array name="cuisine_options">
         <item>Indian</item>
@@ -10,10 +17,31 @@
         <item>Mexican</item>
     </string-array>
 
-    <!-- Other strings -->
-    <string name="preferences_title">Preferences</string>
-    <string name="select_cuisine">Select Cuisine</string>
-    <string name="budget_hint">Enter Budget (₹)</string>
-    <string name="food_preference">Food Preference</string>
-    <string name="save_preferences">Save Preferences</string>
+    <!-- Home Screen strings -->
+    <string name="welcome">Welcome</string>
+    <string name="search_food_hint">Search Food…</string>
+    <string name="search_by_preferences">🔍 Search by Preferences</string>
+    <string name="top_restaurants">Top Restaurants</string>
+    <string name="view_all">VIEW ALL</string>
+    <string name="choose_category">Choose Category</string>
+
+    <!-- Categories -->
+    <string name="category_pizza">Pizza</string>
+    <string name="category_burger">Burger</string>
+    <string name="category_chicken">Chicken</string>
+    <string name="category_sushi">Sushi</string>
+    <string name="category_meat">Meat</string>
+    <string name="category_hotdog">Hotdog</string>
+    <string name="category_drink">Drink</string>
+    <string name="category_more">More</string>
+
+    <!-- Common -->
+    <string name="add_to_cart">Add to Cart</string>
+    <string name="min">min</string>
+    <string name="menu">Menu</string>
+    <string name="cart">Cart</string>
+    <string name="rating">Rating</string>
+    <string name="delivery_time">Delivery Time</string>
+
+    <string name="dish_image">Dish image</string>
 </resources>
