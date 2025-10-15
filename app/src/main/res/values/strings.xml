@@ -44,4 +44,13 @@
     <string name="delivery_time">Delivery Time</string>
 
     <string name="dish_image">Dish image</string>
+
+    <string name="order_id_format">Order ID: %s</string>
+    <string name="total_amount_format">Total: ₹%d</string>
+    <string name="order_status_confirmed">Confirmed</string>
+    <string name="delivery_time_estimate">30-45 minutes</string>
+    <string name="order_tracking">Order Tracking</string>
+    <string name="tracking_coming_soon">Order tracking feature will be available soon!</string>
+    <string name="ok">OK</string>'
+    
 </resources>
