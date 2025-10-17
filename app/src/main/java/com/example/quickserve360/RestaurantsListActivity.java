@@ -3,6 +3,7 @@ package com.example.quickserve360;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -26,6 +27,7 @@ public class RestaurantsListActivity extends AppCompatActivity {
     private List<Restaurant> restaurantList = new ArrayList<>();
     private FirebaseDatabase database = FirebaseDatabase.getInstance();
     private String selectedLocation;
+    private ImageButton btnBack;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,27 +37,20 @@ public class RestaurantsListActivity extends AppCompatActivity {
         selectedLocation = getIntent().getStringExtra("selectedLocation");
         Log.d("RestaurantsList", "Selected location: " + selectedLocation);
 
+        // Initialize back button
+        btnBack = findViewById(R.id.btnBackArrow);
+        btnBack.setOnClickListener(v -> onBackPressed());
+
         recyclerView = findViewById(R.id.recyclerRestaurants);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        // ⭐⭐⭐⭐ THIS IS THE CRITICAL PART - CLICK LISTENER ⭐⭐⭐⭐
-        adapter = new RestaurantListAdapter(restaurantList, new RestaurantListAdapter.OnRestaurantClickListener() {
-            @Override
-            public void onRestaurantClick(Restaurant restaurant) {
-                // ⭐⭐⭐⭐ WHEN RESTAURANT IS CLICKED, OPEN REVIEW PAGE ⭐⭐⭐⭐
-                Log.d("RestaurantsList", "Opening WriteReviewActivity for: " + restaurant.getName());
-
-                Intent intent = new Intent(RestaurantsListActivity.this, WriteReviewActivity.class);
-                intent.putExtra("restaurantId", restaurant.getId());
-                intent.putExtra("restaurantName", restaurant.getName());
-
-                // ⭐⭐⭐⭐ START THE REVIEW ACTIVITY ⭐⭐⭐⭐
-                startActivity(intent);
-            }
+        adapter = new RestaurantListAdapter(restaurantList, restaurant -> {
+            Intent intent = new Intent(RestaurantsListActivity.this, WriteReviewActivity.class);
+            intent.putExtra("restaurantId", restaurant.getId());
+            intent.putExtra("restaurantName", restaurant.getName());
+            startActivity(intent);
         });
-
         recyclerView.setAdapter(adapter);
-
         loadRestaurants();
     }
 

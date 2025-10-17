@@ -10,11 +10,15 @@ public class Review {
     private String comment;
     private long timestamp;
 
-    public Review() {
-        // Default constructor required for Firebase
-    }
+    // TensorFlow ML Sentiment fields
+    private float sentimentScore;
+    private String sentimentLabel;
+    private float adjustedRating;
 
-    public Review(String id, String userId, String restaurantId, String restaurantName, String userName, float rating, String comment, long timestamp) {
+    public Review() {}
+
+    public Review(String id, String userId, String restaurantId, String restaurantName,
+                  String userName, float rating, String comment, long timestamp) {
         this.id = id;
         this.userId = userId;
         this.restaurantId = restaurantId;
@@ -25,7 +29,6 @@ public class Review {
         this.timestamp = timestamp;
     }
 
-    // Getters and setters
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
 
@@ -49,4 +52,13 @@ public class Review {
 
     public long getTimestamp() { return timestamp; }
     public void setTimestamp(long timestamp) { this.timestamp = timestamp; }
+
+    public float getSentimentScore() { return sentimentScore; }
+    public void setSentimentScore(float sentimentScore) { this.sentimentScore = sentimentScore; }
+
+    public String getSentimentLabel() { return sentimentLabel; }
+    public void setSentimentLabel(String sentimentLabel) { this.sentimentLabel = sentimentLabel; }
+
+    public float getAdjustedRating() { return adjustedRating; }
+    public void setAdjustedRating(float adjustedRating) { this.adjustedRating = adjustedRating; }
 }
