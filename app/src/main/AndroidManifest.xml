@@ -15,6 +15,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.QuickServe360">
         <activity
+            android:name=".WriteReviewActivity"
+            android:exported="false" />
+        <activity
+            android:name=".RestaurantsListActivity"
+            android:exported="false" />
+        <activity
             android:name=".OrderConfirmationActivity"
             android:exported="false" />
         <activity

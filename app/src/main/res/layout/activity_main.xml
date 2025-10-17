@@ -106,23 +106,54 @@
 
             </androidx.cardview.widget.CardView>
 
-            <!-- Search by Preferences Button -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnSearchByPreferences"
-                android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:layout_marginBottom="24dp"
-                android:text="Search by Preferences"
-                android:textSize="16sp"
-                android:textColor="#FFFFFF"
-                app:icon="@drawable/ic_filter"
-                app:iconGravity="textStart"
-                app:iconTint="#FFFFFF"
-                app:backgroundTint="#9C27B0"
-                app:cornerRadius="12dp"
-                android:elevation="4dp"/>
+            <!-- Action Buttons Row -->
 
             <!-- Best Restaurants Section Header -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp"
+                android:orientation="horizontal"
+                android:weightSum="2">
+
+                <!-- Search by Preferences Button -->
+
+                <!-- Give Review Button -->
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnSearchByPreferences"
+                    android:layout_width="0dp"
+                    android:layout_height="56dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_weight="1"
+                    android:elevation="4dp"
+                    android:text="Search by Preferences"
+                    android:textColor="#FFFFFF"
+                    android:textSize="14sp"
+                    app:backgroundTint="#9C27B0"
+                    app:cornerRadius="12dp"
+                    app:icon="@drawable/ic_filter"
+                    app:iconGravity="textStart"
+                    app:iconTint="#FFFFFF" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnGiveReview"
+                    android:layout_width="0dp"
+                    android:layout_height="56dp"
+                    android:layout_marginStart="8dp"
+                    android:layout_weight="1"
+                    android:elevation="4dp"
+                    android:text="Give Review"
+                    android:textColor="#FFFFFF"
+                    android:textSize="14sp"
+                    app:backgroundTint="#FF6B35"
+                    app:cornerRadius="12dp"
+                    app:icon="@drawable/ic_review"
+                    app:iconGravity="textStart"
+                    app:iconTint="#FFFFFF" />
+
+            </LinearLayout>
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

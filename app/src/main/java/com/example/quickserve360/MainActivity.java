@@ -248,6 +248,13 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
+        // ADD THIS: Give Review button click listener
+        binding.btnGiveReview.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, RestaurantsListActivity.class);
+            intent.putExtra("selectedLocation", selectedLocation);
+            startActivity(intent);
+        });
+
         binding.ivLogout.setOnClickListener(v -> {
             database.getReference("users").child(userId).child("selectedCity").removeValue();
             FirebaseAuth.getInstance().signOut();
