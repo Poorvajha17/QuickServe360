@@ -1,13 +1,14 @@
 {
   "project_info": {
-    "project_number": "1060400534740",
-    "project_id": "quickserve360-c47d9",
-    "storage_bucket": "quickserve360-c47d9.firebasestorage.app"
+    "project_number": "217997940775",
+    "firebase_url": "https://quickserve360-754de-default-rtdb.firebaseio.com",
+    "project_id": "quickserve360-754de",
+    "storage_bucket": "quickserve360-754de.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:1060400534740:android:f2ea1a8c38739c806fd741",
+        "mobilesdk_app_id": "1:217997940775:android:3be8b56df28d350f08d602",
         "android_client_info": {
           "package_name": "com.example.quickserve360"
         }
@@ -15,7 +16,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyCmwNYcKTNRkQNaqav_TtN5Bmyh3OJBRlM"
+          "current_key": "AIzaSyBZzLtQ6ep1NVQYdlvwfNU-SWZgfRQFbnk"
         }
       ],
       "services": {

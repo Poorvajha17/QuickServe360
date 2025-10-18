@@ -15,6 +15,17 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.QuickServe360">
         <activity
+            android:name=".AdminDashboardActivity"
+            android:exported="false" />
+        <activity
+            android:name=".RoleSelectionActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
             android:name=".WriteReviewActivity"
             android:exported="false" />
         <activity
@@ -73,13 +84,7 @@
             android:exported="false" />
         <activity
             android:name=".Signup"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+            android:exported="false" />
         <activity
             android:name=".Login"
             android:exported="false" />
