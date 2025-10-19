@@ -2,6 +2,8 @@ package com.example.quickserve360;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
@@ -27,6 +29,7 @@ public class MainActivity extends AppCompatActivity {
 
     private BestRestaurantsAdapter bestRestaurantsAdapter;
     private ArrayList<Restaurant> bestRestaurantsList = new ArrayList<>();
+    private ArrayList<Restaurant> filteredRestaurantsList = new ArrayList<>();
 
     private CategoryAdapter categoryAdapter;
     private ArrayList<Category> categoryList = new ArrayList<>();
@@ -79,6 +82,9 @@ public class MainActivity extends AppCompatActivity {
 
                         // Setup click listeners
                         setupClickListeners();
+
+                        // Setup search functionality
+                        setupSearchFilter();
                     } else {
                         redirectToLocationSelector();
                     }
@@ -111,7 +117,8 @@ public class MainActivity extends AppCompatActivity {
         binding.recyclerBestRestaurants.setNestedScrollingEnabled(false);
         binding.recyclerBestRestaurants.setHasFixedSize(true);
 
-        bestRestaurantsAdapter = new BestRestaurantsAdapter(bestRestaurantsList, restaurant -> {
+        // Use filteredRestaurantsList for the adapter
+        bestRestaurantsAdapter = new BestRestaurantsAdapter(filteredRestaurantsList, restaurant -> {
             Intent intent = new Intent(MainActivity.this, RestaurantDishesActivity.class);
             intent.putExtra("restaurantId", restaurant.getId());
             intent.putExtra("restaurantName", restaurant.getName());
@@ -181,6 +188,10 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                     Log.d("MainActivity", "Final list size: " + bestRestaurantsList.size());
+
+                    // Update filtered list with all restaurants initially
+                    filteredRestaurantsList.clear();
+                    filteredRestaurantsList.addAll(bestRestaurantsList);
                     bestRestaurantsAdapter.notifyDataSetChanged();
 
                     // Force RecyclerView to refresh
@@ -241,6 +252,52 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private void setupSearchFilter() {
+        binding.etSearchFood.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                // Not needed
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                filterRestaurants(s.toString());
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                // Not needed
+            }
+        });
+    }
+
+    private void filterRestaurants(String query) {
+        filteredRestaurantsList.clear();
+
+        if (query.isEmpty()) {
+            // If search is empty, show all restaurants
+            filteredRestaurantsList.addAll(bestRestaurantsList);
+        } else {
+            // Filter restaurants by name (case-insensitive)
+            String lowerCaseQuery = query.toLowerCase().trim();
+
+            for (Restaurant restaurant : bestRestaurantsList) {
+                if (restaurant.getName().toLowerCase().contains(lowerCaseQuery)) {
+                    filteredRestaurantsList.add(restaurant);
+                }
+            }
+        }
+
+        bestRestaurantsAdapter.notifyDataSetChanged();
+
+        Log.d("MainActivity", "Search query: '" + query + "' - Results: " + filteredRestaurantsList.size());
+
+        // Optional: Show a message if no results found
+        if (filteredRestaurantsList.isEmpty() && !query.isEmpty()) {
+            Toast.makeText(this, "No restaurants found matching '" + query + "'", Toast.LENGTH_SHORT).show();
+        }
+    }
+
     private void setupClickListeners() {
         binding.btnSearchByPreferences.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, PreferencesActivity.class);
@@ -248,7 +305,6 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        // ADD THIS: Give Review button click listener
         binding.btnGiveReview.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, RestaurantsListActivity.class);
             intent.putExtra("selectedLocation", selectedLocation);
@@ -263,7 +319,6 @@ public class MainActivity extends AppCompatActivity {
         });
 
         binding.ivCart.setOnClickListener(v -> {
-            // Redirect to CartActivity
             Intent intent = new Intent(MainActivity.this, CartActivity.class);
             startActivity(intent);
         });

@@ -62,4 +62,6 @@ dependencies {
     implementation(libs.tensorflow.lite)
     implementation(libs.tensorflow.lite.support)
     implementation(libs.tensorflow.lite.task.text)
+    implementation(libs.mpandroidchart)
+    implementation(libs.cardview)
 }

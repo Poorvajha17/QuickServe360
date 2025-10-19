@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Add New Dish"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="@color/deep_purple"
+            android:layout_marginBottom="16dp"/>
+
+        <EditText
+            android:id="@+id/dish_name_edit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Dish Name"
+            android:background="@drawable/custom_edittext"
+            android:padding="12dp"
+            android:layout_marginBottom="12dp"/>
+
+        <EditText
+            android:id="@+id/dish_description_edit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Description"
+            android:background="@drawable/custom_edittext"
+            android:padding="12dp"
+            android:minLines="3"
+            android:gravity="top"
+            android:layout_marginBottom="12dp"/>
+
+        <EditText
+            android:id="@+id/dish_price_edit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Price (₹)"
+            android:inputType="number"
+            android:background="@drawable/custom_edittext"
+            android:padding="12dp"
+            android:layout_marginBottom="12dp"/>
+
+        <EditText
+            android:id="@+id/dish_image_edit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Image URL"
+            android:background="@drawable/custom_edittext"
+            android:padding="12dp"
+            android:layout_marginBottom="16dp"/>
+
+        <Button
+            android:id="@+id/add_dish_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Add Dish"
+            android:backgroundTint="@color/deep_purple"
+            android:textColor="@android:color/white"/>
+    </LinearLayout>
+</ScrollView>
