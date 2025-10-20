@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.EditText;
 import android.widget.ProgressBar;
-import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -21,18 +20,14 @@ import java.util.UUID;
 public class WriteReviewActivity extends AppCompatActivity {
 
     private TextView tvRestaurantName;
-    private RatingBar ratingBar;
     private EditText etComment;
-    private MaterialButton btnSubmit;
-    private MaterialButton btnBack;
+    private MaterialButton btnSubmit, btnBack;
     private ProgressBar progressBar;
     private TextView tvAnalysisStatus;
 
     private FirebaseDatabase database = FirebaseDatabase.getInstance();
     private FirebaseAuth auth = FirebaseAuth.getInstance();
     private SentimentAnalyzer sentimentAnalyzer;
-
-    private DecimalFormat decimalFormat = new DecimalFormat("0.0");
 
     private String restaurantId;
     private String restaurantName;
@@ -43,16 +38,12 @@ public class WriteReviewActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_write_review);
 
-        // Initialize TensorFlow Lite Sentiment Analyzer
         sentimentAnalyzer = new SentimentAnalyzer(this);
 
         restaurantId = getIntent().getStringExtra("restaurantId");
         restaurantName = getIntent().getStringExtra("restaurantName");
 
-        Log.d("WriteReview", "Restaurant: " + restaurantName + " (" + restaurantId + ")");
-
         if (restaurantId == null || restaurantName == null) {
-            Log.e("WriteReview", "Missing restaurant data");
             Toast.makeText(this, "Error: Restaurant information not found", Toast.LENGTH_SHORT).show();
             finish();
             return;
@@ -66,7 +57,6 @@ public class WriteReviewActivity extends AppCompatActivity {
 
     private void initViews() {
         tvRestaurantName = findViewById(R.id.tvRestaurantName);
-        ratingBar = findViewById(R.id.ratingBar);
         etComment = findViewById(R.id.etComment);
         btnSubmit = findViewById(R.id.btnSubmit);
         btnBack = findViewById(R.id.btnBack);
@@ -84,54 +74,32 @@ public class WriteReviewActivity extends AppCompatActivity {
     }
 
     private void submitReview() {
-        float userRating = ratingBar.getRating();
         String comment = etComment.getText().toString().trim();
-
-        if (userRating == 0) {
-            Toast.makeText(this, "Please provide a rating", Toast.LENGTH_SHORT).show();
-            return;
-        }
 
         if (comment.isEmpty()) {
             Toast.makeText(this, "Please write a comment", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Show progress bar and analysis status
         progressBar.setVisibility(android.view.View.VISIBLE);
         tvAnalysisStatus.setVisibility(android.view.View.VISIBLE);
         btnSubmit.setEnabled(false);
         btnBack.setEnabled(false);
 
-        // ============ TensorFlow Lite ML Analysis ============
         sentimentAnalyzer.analyzeSentiment(comment, result -> {
             if (result.status == 1) {
-                float adjustedRating = sentimentAnalyzer.calculateAdjustedRating(userRating, result.score);
-
-                // Format to 1 decimal place
-                String formattedAdjusted = decimalFormat.format(adjustedRating);
-                String formattedUser = decimalFormat.format(userRating);
-
-                Log.d("WriteReview", "ML Results - Original: " + formattedUser +
-                        " | Sentiment: " + result.label +
-                        " | Score: " + result.score +
-                        " | Adjusted: " + formattedAdjusted);
-
-                saveReviewToFirebase(userRating, comment, result, adjustedRating);
+                saveReviewToFirebase(comment, result);
             } else {
                 progressBar.setVisibility(android.view.View.GONE);
                 tvAnalysisStatus.setVisibility(android.view.View.GONE);
                 btnSubmit.setEnabled(true);
                 btnBack.setEnabled(true);
-                Toast.makeText(WriteReviewActivity.this,
-                        "Error in sentiment analysis", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Error in sentiment analysis", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
-    private void saveReviewToFirebase(float userRating, String comment,
-                                      SentimentAnalyzer.SentimentResult sentiment,
-                                      float adjustedRating) {
+    private void saveReviewToFirebase(String comment, SentimentAnalyzer.SentimentResult sentiment) {
         String reviewId = UUID.randomUUID().toString();
         long timestamp = System.currentTimeMillis();
 
@@ -145,45 +113,19 @@ public class WriteReviewActivity extends AppCompatActivity {
             }
         }
 
-        Review review = new Review(reviewId, userId, restaurantId, restaurantName,
-                userName, userRating, comment, timestamp);
-
-        // Format adjusted rating to 1 decimal place
-        float formattedAdjusted = Float.parseFloat(decimalFormat.format(adjustedRating));
-
+        Review review = new Review(reviewId, userId, restaurantId, restaurantName, userName, comment, timestamp);
         review.setSentimentScore(sentiment.score);
         review.setSentimentLabel(sentiment.label);
-        review.setAdjustedRating(formattedAdjusted);
 
         DatabaseReference reviewsRef = database.getReference("Reviews").child(reviewId);
         reviewsRef.setValue(review)
                 .addOnSuccessListener(aVoid -> {
-                    Log.d("WriteReview", "Review saved successfully");
-                    updateRestaurantRating(restaurantId, formattedAdjusted, sentiment.label);
-                })
-                .addOnFailureListener(e -> {
-                    progressBar.setVisibility(android.view.View.GONE);
-                    tvAnalysisStatus.setVisibility(android.view.View.GONE);
-                    btnSubmit.setEnabled(true);
-                    btnBack.setEnabled(true);
-                    Log.e("WriteReview", "Failed to save review: " + e.getMessage());
-                    Toast.makeText(WriteReviewActivity.this,
-                            "Failed to submit review", Toast.LENGTH_SHORT).show();
-                });
-    }
-
-    private void updateRestaurantRating(String restaurantId, float adjustedRating, String sentimentLabel) {
-        DatabaseReference restaurantRef = database.getReference("Restaurants").child(restaurantId);
-        restaurantRef.child("rating").setValue(adjustedRating)
-                .addOnSuccessListener(aVoid -> {
                     progressBar.setVisibility(android.view.View.GONE);
                     tvAnalysisStatus.setVisibility(android.view.View.GONE);
                     btnSubmit.setEnabled(true);
                     btnBack.setEnabled(true);
 
-                    String formattedRating = decimalFormat.format(adjustedRating);
-                    Toast.makeText(WriteReviewActivity.this,
-                            "Review submitted! Rating: " + formattedRating + " ⭐ (" + sentimentLabel + ")",
+                    Toast.makeText(this, "Review submitted! Sentiment: " + sentiment.label,
                             Toast.LENGTH_SHORT).show();
                     finish();
                 })
@@ -192,7 +134,7 @@ public class WriteReviewActivity extends AppCompatActivity {
                     tvAnalysisStatus.setVisibility(android.view.View.GONE);
                     btnSubmit.setEnabled(true);
                     btnBack.setEnabled(true);
-                    Log.e("WriteReview", "Failed to update rating: " + e.getMessage());
+                    Toast.makeText(this, "Failed to submit review", Toast.LENGTH_SHORT).show();
                 });
     }
 }

@@ -1,64 +1,30 @@
 package com.example.quickserve360;
 
 public class Review {
-    private String id;
-    private String userId;
-    private String restaurantId;
-    private String restaurantName;
-    private String userName;
-    private float rating;
-    private String comment;
-    private long timestamp;
+    public String reviewId;
+    public String userId;
+    public String restaurantId;
+    public String restaurantName;
+    public String userName;
+    public String comment;
+    public long timestamp;
 
-    // TensorFlow ML Sentiment fields
-    private float sentimentScore;
-    private String sentimentLabel;
-    private float adjustedRating;
+    public float sentimentScore;
+    public String sentimentLabel;
 
-    public Review() {}
+    public Review() {} // no-arg constructor for Firebase
 
-    public Review(String id, String userId, String restaurantId, String restaurantName,
-                  String userName, float rating, String comment, long timestamp) {
-        this.id = id;
+    public Review(String reviewId, String userId, String restaurantId, String restaurantName,
+                  String userName, String comment, long timestamp) {
+        this.reviewId = reviewId;
         this.userId = userId;
         this.restaurantId = restaurantId;
         this.restaurantName = restaurantName;
         this.userName = userName;
-        this.rating = rating;
         this.comment = comment;
         this.timestamp = timestamp;
     }
 
-    public String getId() { return id; }
-    public void setId(String id) { this.id = id; }
-
-    public String getUserId() { return userId; }
-    public void setUserId(String userId) { this.userId = userId; }
-
-    public String getRestaurantId() { return restaurantId; }
-    public void setRestaurantId(String restaurantId) { this.restaurantId = restaurantId; }
-
-    public String getRestaurantName() { return restaurantName; }
-    public void setRestaurantName(String restaurantName) { this.restaurantName = restaurantName; }
-
-    public String getUserName() { return userName; }
-    public void setUserName(String userName) { this.userName = userName; }
-
-    public float getRating() { return rating; }
-    public void setRating(float rating) { this.rating = rating; }
-
-    public String getComment() { return comment; }
-    public void setComment(String comment) { this.comment = comment; }
-
-    public long getTimestamp() { return timestamp; }
-    public void setTimestamp(long timestamp) { this.timestamp = timestamp; }
-
-    public float getSentimentScore() { return sentimentScore; }
-    public void setSentimentScore(float sentimentScore) { this.sentimentScore = sentimentScore; }
-
-    public String getSentimentLabel() { return sentimentLabel; }
-    public void setSentimentLabel(String sentimentLabel) { this.sentimentLabel = sentimentLabel; }
-
-    public float getAdjustedRating() { return adjustedRating; }
-    public void setAdjustedRating(float adjustedRating) { this.adjustedRating = adjustedRating; }
+    public void setSentimentScore(float score) { this.sentimentScore = score; }
+    public void setSentimentLabel(String label) { this.sentimentLabel = label; }
 }

@@ -58,12 +58,7 @@ public class ManageRestaurantsActivity extends AppCompatActivity {
 
         loadRestaurants();
 
-        addRestaurantFab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showAddRestaurantDialog();
-            }
-        });
+        addRestaurantFab.setOnClickListener(v -> showAddRestaurantDialog());
     }
 
     private void loadRestaurants() {
@@ -104,51 +99,75 @@ public class ManageRestaurantsActivity extends AppCompatActivity {
 
         AlertDialog dialog = builder.create();
 
-        addButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String name = nameEdit.getText().toString().trim();
-                String category = categoryEdit.getText().toString().trim();
-                String cuisine = cuisineEdit.getText().toString().trim();
-                String location = locationEdit.getText().toString().trim();
-                String budgetStr = budgetEdit.getText().toString().trim();
-                String description = descriptionEdit.getText().toString().trim();
-                String image = imageEdit.getText().toString().trim();
+        addButton.setOnClickListener(v -> {
+            String name = nameEdit.getText().toString().trim();
+            String category = categoryEdit.getText().toString().trim();
+            String cuisine = cuisineEdit.getText().toString().trim();
+            String location = locationEdit.getText().toString().trim();
+            String budgetStr = budgetEdit.getText().toString().trim();
+            String description = descriptionEdit.getText().toString().trim();
+            String image = imageEdit.getText().toString().trim();
 
-                if (name.isEmpty() || category.isEmpty() || cuisine.isEmpty() ||
-                        location.isEmpty() || budgetStr.isEmpty()) {
-                    Toast.makeText(ManageRestaurantsActivity.this,
-                            "Please fill all fields", Toast.LENGTH_SHORT).show();
-                    return;
+            if (name.isEmpty() || category.isEmpty() || cuisine.isEmpty() ||
+                    location.isEmpty() || budgetStr.isEmpty()) {
+                Toast.makeText(ManageRestaurantsActivity.this,
+                        "Please fill all fields", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            int budget = Integer.parseInt(budgetStr);
+
+            // ✅ Find the highest restaurant number and assign next one
+            databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    int maxNum = 0;
+
+                    for (DataSnapshot child : snapshot.getChildren()) {
+                        String key = child.getKey(); // e.g., "rest12"
+                        if (key != null && key.startsWith("rest")) {
+                            try {
+                                int num = Integer.parseInt(key.substring(4));
+                                if (num > maxNum) {
+                                    maxNum = num;
+                                }
+                            } catch (NumberFormatException ignored) {}
+                        }
+                    }
+
+                    String id = "rest" + (maxNum + 1); // next sequential ID
+
+                    HashMap<String, Object> restaurantMap = new HashMap<>();
+                    restaurantMap.put("id", id);
+                    restaurantMap.put("name", name);
+                    restaurantMap.put("category", category);
+                    restaurantMap.put("cuisine", cuisine);
+                    restaurantMap.put("location", location);
+                    restaurantMap.put("budget", budget);
+                    restaurantMap.put("description", description);
+                    restaurantMap.put("imagePath", image);
+                    restaurantMap.put("rating", 0.0);
+                    restaurantMap.put("isVeg", false);
+                    restaurantMap.put("isBestRestaurant", false);
+
+                    databaseReference.child(id).setValue(restaurantMap)
+                            .addOnSuccessListener(aVoid -> {
+                                Toast.makeText(ManageRestaurantsActivity.this,
+                                        "Restaurant added successfully", Toast.LENGTH_SHORT).show();
+                                dialog.dismiss();
+                            })
+                            .addOnFailureListener(e -> {
+                                Toast.makeText(ManageRestaurantsActivity.this,
+                                        "Failed to add restaurant", Toast.LENGTH_SHORT).show();
+                            });
                 }
 
-                int budget = Integer.parseInt(budgetStr);
-                String id = "rest" + System.currentTimeMillis();
-
-                HashMap<String, Object> restaurantMap = new HashMap<>();
-                restaurantMap.put("id", id);
-                restaurantMap.put("name", name);
-                restaurantMap.put("category", category);
-                restaurantMap.put("cuisine", cuisine);
-                restaurantMap.put("location", location);
-                restaurantMap.put("budget", budget);
-                restaurantMap.put("description", description);
-                restaurantMap.put("imagePath", image);
-                restaurantMap.put("rating", 0.0);
-                restaurantMap.put("isVeg", false);
-                restaurantMap.put("isBestRestaurant", false);
-
-                databaseReference.child(id).setValue(restaurantMap)
-                        .addOnSuccessListener(aVoid -> {
-                            Toast.makeText(ManageRestaurantsActivity.this,
-                                    "Restaurant added successfully", Toast.LENGTH_SHORT).show();
-                            dialog.dismiss();
-                        })
-                        .addOnFailureListener(e -> {
-                            Toast.makeText(ManageRestaurantsActivity.this,
-                                    "Failed to add restaurant", Toast.LENGTH_SHORT).show();
-                        });
-            }
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+                    Toast.makeText(ManageRestaurantsActivity.this,
+                            "Error getting restaurant count", Toast.LENGTH_SHORT).show();
+                }
+            });
         });
 
         dialog.show();
@@ -160,7 +179,7 @@ public class ManageRestaurantsActivity extends AppCompatActivity {
         return true;
     }
 
-    // Restaurant Model Class
+    // ✅ Restaurant Model
     public static class Restaurant {
         public String id;
         public String name;
@@ -177,10 +196,10 @@ public class ManageRestaurantsActivity extends AppCompatActivity {
         public Restaurant() {}
     }
 
-    // Adapter Class
+    // ✅ Adapter Class
     class RestaurantAdapter extends RecyclerView.Adapter<RestaurantAdapter.ViewHolder> {
 
-        private List<Restaurant> restaurants;
+        private final List<Restaurant> restaurants;
 
         public RestaurantAdapter(List<Restaurant> restaurants) {
             this.restaurants = restaurants;

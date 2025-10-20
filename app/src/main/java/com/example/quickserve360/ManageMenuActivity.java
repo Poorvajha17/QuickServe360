@@ -111,23 +111,47 @@ public class ManageMenuActivity extends AppCompatActivity {
             }
 
             int price = Integer.parseInt(priceStr);
-            String dishId = "dish" + System.currentTimeMillis();
 
-            HashMap<String, Object> dishMap = new HashMap<>();
-            dishMap.put("id", dishId);
-            dishMap.put("name", name);
-            dishMap.put("description", description);
-            dishMap.put("price", price);
-            dishMap.put("imagePath", image);
+            databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    int maxNum = 0;
+                    for (DataSnapshot child : snapshot.getChildren()) {
+                        String key = child.getKey();
+                        if (key != null && key.startsWith("dish")) {
+                            try {
+                                int num = Integer.parseInt(key.substring(4));
+                                if (num > maxNum) maxNum = num;
+                            } catch (NumberFormatException ignored) {}
+                        }
+                    }
+                    String dishId = "dish" + (maxNum + 1);
 
-            databaseReference.child(dishId).setValue(dishMap)
-                    .addOnSuccessListener(aVoid -> {
-                        Toast.makeText(this, "Dish added successfully", Toast.LENGTH_SHORT).show();
-                        dialog.dismiss();
-                    })
-                    .addOnFailureListener(e -> {
-                        Toast.makeText(this, "Failed to add dish", Toast.LENGTH_SHORT).show();
-                    });
+                    HashMap<String, Object> dishMap = new HashMap<>();
+                    dishMap.put("id", dishId);
+                    dishMap.put("name", name);
+                    dishMap.put("description", description);
+                    dishMap.put("price", price);
+                    dishMap.put("imagePath", image);
+
+                    databaseReference.child(dishId).setValue(dishMap)
+                            .addOnSuccessListener(aVoid -> {
+                                Toast.makeText(ManageMenuActivity.this,
+                                        "Dish added successfully", Toast.LENGTH_SHORT).show();
+                                dialog.dismiss();
+                            })
+                            .addOnFailureListener(e -> {
+                                Toast.makeText(ManageMenuActivity.this,
+                                        "Failed to add dish", Toast.LENGTH_SHORT).show();
+                            });
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+                    Toast.makeText(ManageMenuActivity.this,
+                            "Failed to get dish count", Toast.LENGTH_SHORT).show();
+                }
+            });
         });
 
         dialog.show();
@@ -177,9 +201,7 @@ public class ManageMenuActivity extends AppCompatActivity {
 
             Picasso.get().load(dish.imagePath).into(holder.imageView);
 
-            holder.editButton.setOnClickListener(v -> {
-                showEditDishDialog(dish);
-            });
+            holder.editButton.setOnClickListener(v -> showEditDishDialog(dish));
 
             holder.deleteButton.setOnClickListener(v -> {
                 new AlertDialog.Builder(ManageMenuActivity.this)
@@ -230,7 +252,6 @@ public class ManageMenuActivity extends AppCompatActivity {
         EditText imageEdit = dialogView.findViewById(R.id.dish_image_edit);
         Button addButton = dialogView.findViewById(R.id.add_dish_button);
 
-        // Pre-fill with existing data
         nameEdit.setText(dish.name);
         descEdit.setText(dish.description);
         priceEdit.setText(String.valueOf(dish.price));

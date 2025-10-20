@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/white"
+    android:background="@drawable/blue_purple_bg"
     android:padding="16dp">
 
     <!-- Header with Back Button and Title -->
@@ -21,7 +21,8 @@
             android:src="@drawable/ic_back_arrow"
             android:contentDescription="Go back"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:scaleType="centerInside" />
+            android:scaleType="centerInside"
+            android:tint="@android:color/white" />
 
         <TextView
             android:layout_width="0dp"
@@ -31,7 +32,7 @@
             android:textSize="20sp"
             android:textStyle="bold"
             android:gravity="center"
-            android:textColor="@color/black"
+            android:textColor="@android:color/white"
             android:paddingStart="16dp" />
 
         <!-- Spacer for balance -->
@@ -41,9 +42,12 @@
 
     </LinearLayout>
 
+    <!-- Restaurant List -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerRestaurants"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:paddingBottom="12dp"
+        android:clipToPadding="false" />
 
 </LinearLayout>
