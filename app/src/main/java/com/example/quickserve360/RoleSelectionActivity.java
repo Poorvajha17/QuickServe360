@@ -29,7 +29,7 @@ public class RoleSelectionActivity extends AppCompatActivity {
         adminCard.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(RoleSelectionActivity.this, Signup.class);
+                Intent intent = new Intent(RoleSelectionActivity.this, Login.class);
                 intent.putExtra("USER_ROLE", "admin");
                 startActivity(intent);
             }
