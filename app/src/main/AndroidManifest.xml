@@ -15,6 +15,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.QuickServe360">
         <activity
+            android:name=".ChartDetailActivity"
+            android:exported="false" />
+        <activity
             android:name=".ManageMenuActivity"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.Light.DarkActionBar" />
@@ -34,17 +37,14 @@
             android:name=".ManageOrdersActivity"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.Light.DarkActionBar" />
-
         <activity
             android:name=".ManageRestaurantsActivity"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.Light.DarkActionBar" />
-
         <activity
             android:name=".AdminDashboardActivity"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.Light.DarkActionBar" />
-
         <activity
             android:name=".RoleSelectionActivity"
             android:exported="true">

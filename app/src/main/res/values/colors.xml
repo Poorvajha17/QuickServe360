@@ -34,4 +34,5 @@
     <color name="mint_category">#88BB88</color>
     <color name="violet_category">#CC77CC</color>
     <color name="indigo_category">#99AADD</color>
+    <color name="text_primary">#212121</color>
 </resources>
