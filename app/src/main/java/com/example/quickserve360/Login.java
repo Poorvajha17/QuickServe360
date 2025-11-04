@@ -59,6 +59,11 @@ public class Login extends AppCompatActivity {
         // Display role
         roleTextView.setText("Logging in as: " + expectedRole.toUpperCase());
 
+        // Hide signup option for admin
+        if (expectedRole.equalsIgnoreCase("admin")) {
+            signupRedirectText.setVisibility(View.GONE);
+        }
+
         // Login button click
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
