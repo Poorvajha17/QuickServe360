@@ -63,4 +63,5 @@ dependencies {
     implementation(libs.tensorflow.lite.task.text)
     implementation(libs.mpandroidchart)
     implementation(libs.cardview)
+    implementation("org.tensorflow:tensorflow-lite-task-text:0.4.4")
 }
