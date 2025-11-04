@@ -2,6 +2,8 @@ package com.example.quickserve360;
 
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -33,10 +35,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 public class AdminStatisticsActivity extends AppCompatActivity {
 
@@ -44,14 +48,19 @@ public class AdminStatisticsActivity extends AppCompatActivity {
     private BarChart citiesBarChart, restaurantRevenueBarChart, topDishesBarChart, reviewRatingsBarChart;
     private PieChart paymentPieChart, categoryPieChart, userPrefsPieChart, orderStatusPieChart;
     private DatabaseReference databaseReference;
+    private ImageButton btnBackArrow;
+
+    private static final String TAG = "AdminStatistics";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getSupportActionBar().hide();
         setContentView(R.layout.activity_admin_statistics);
 
-        getSupportActionBar().setTitle("Statistics & Analytics");
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        // Initialize back button
+        btnBackArrow = findViewById(R.id.btnBackArrow);
+        btnBackArrow.setOnClickListener(v -> finish());
 
         // Initialize charts
         ordersLineChart = findViewById(R.id.orders_line_chart);
@@ -74,6 +83,8 @@ public class AdminStatisticsActivity extends AppCompatActivity {
         databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
+                Log.d(TAG, "Starting data processing...");
+
                 // Data structures for analytics
                 Map<String, Integer> ordersByDate = new HashMap<>();
                 Map<String, Double> revenueByDate = new HashMap<>();
@@ -86,41 +97,54 @@ public class AdminStatisticsActivity extends AppCompatActivity {
                 Map<String, Float> restaurantRatings = new HashMap<>();
                 Map<String, Integer> ordersByStatus = new HashMap<>();
 
-                // Restaurant mapping for quick lookup
-                Map<String, String> restaurantNames = new HashMap<>();
+                // Build dish-to-restaurant mapping FIRST
+                Map<String, String> dishToRestaurantMap = new HashMap<>();
                 Map<String, String> restaurantCategories = new HashMap<>();
                 Map<String, String> restaurantLocations = new HashMap<>();
+                Map<String, String> restaurantNames = new HashMap<>();
 
-                // Build restaurant mapping
-                DataSnapshot restaurantsSnapshot = snapshot.child("Restaurants");
-                if (restaurantsSnapshot.exists()) {
-                    for (DataSnapshot restaurant : restaurantsSnapshot.getChildren()) {
-                        String restId = restaurant.getKey();
-                        String restName = restaurant.child("name").getValue(String.class);
-                        String category = restaurant.child("category").getValue(String.class);
-                        String location = restaurant.child("location").getValue(String.class);
+                Log.d(TAG, "Building dish-to-restaurant mapping...");
 
-                        if (restName != null) {
-                            restaurantNames.put(restId, restName);
-                            revenueByRestaurant.put(restName, 0.0);
-                        }
-                        if (category != null) {
-                            restaurantCategories.put(restId, category);
-                            ordersByCategory.put(category, 0);
-                        }
-                        if (location != null) {
-                            restaurantLocations.put(restId, location);
-                        }
+                // Build mapping from Dishes
+                DataSnapshot dishesSnapshot = snapshot.child("Dishes");
+                for (DataSnapshot restaurantSnap : dishesSnapshot.getChildren()) {
+                    String restaurantId = restaurantSnap.getKey();
+                    for (DataSnapshot dishSnap : restaurantSnap.getChildren()) {
+                        String dishId = dishSnap.getKey();
+                        dishToRestaurantMap.put(dishId, restaurantId);
+                        Log.d(TAG, "Mapped dish " + dishId + " to restaurant " + restaurantId);
                     }
                 }
 
-                // Process orders with improved logic
+                // Build restaurant info mapping
+                DataSnapshot restaurantsSnapshot = snapshot.child("Restaurants");
+                for (DataSnapshot restaurantSnap : restaurantsSnapshot.getChildren()) {
+                    String restaurantId = restaurantSnap.getKey();
+                    String name = restaurantSnap.child("name").getValue(String.class);
+                    String category = restaurantSnap.child("category").getValue(String.class);
+                    String location = restaurantSnap.child("location").getValue(String.class);
+                    Float rating = restaurantSnap.child("rating").getValue(Float.class);
+
+                    if (name != null) restaurantNames.put(restaurantId, name);
+                    if (category != null) restaurantCategories.put(restaurantId, category);
+                    if (location != null) restaurantLocations.put(restaurantId, location);
+                    if (name != null && rating != null) restaurantRatings.put(name, rating);
+
+                    Log.d(TAG, "Restaurant: " + name + " | Category: " + category + " | Location: " + location);
+                }
+
+                // Process orders
                 DataSnapshot ordersSnapshot = snapshot.child("orders");
+                int totalOrdersProcessed = 0;
+                int totalItemsProcessed = 0;
+
                 if (ordersSnapshot.exists()) {
                     for (DataSnapshot userSnapshot : ordersSnapshot.getChildren()) {
                         for (DataSnapshot orderSnapshot : userSnapshot.getChildren()) {
+                            totalOrdersProcessed++;
                             String orderDate = orderSnapshot.child("orderDate").getValue(String.class);
                             String status = orderSnapshot.child("status").getValue(String.class);
+                            String paymentMethod = orderSnapshot.child("paymentMethod").getValue(String.class);
 
                             // Process total amount
                             Object amountObj = orderSnapshot.child("totalAmount").getValue();
@@ -133,76 +157,83 @@ public class AdminStatisticsActivity extends AppCompatActivity {
                                 totalAmount = ((Integer) amountObj).doubleValue();
                             }
 
-                            // Process date for orders and revenue
+                            // Process date
                             if (orderDate != null) {
                                 String dateKey = orderDate.split(" ")[0];
                                 ordersByDate.put(dateKey, ordersByDate.getOrDefault(dateKey, 0) + 1);
                                 revenueByDate.put(dateKey, revenueByDate.getOrDefault(dateKey, 0.0) + totalAmount);
                             }
 
-                            // Process order status
+                            // Process status
                             if (status != null) {
                                 ordersByStatus.put(status, ordersByStatus.getOrDefault(status, 0) + 1);
                             }
 
                             // Process payment method
-                            String paymentMethod = orderSnapshot.child("paymentMethod").getValue(String.class);
                             if (paymentMethod != null) {
                                 ordersByPayment.put(paymentMethod, ordersByPayment.getOrDefault(paymentMethod, 0) + 1);
                             }
 
-                            // Process order items - find restaurant and assign metrics
+                            // Process order items
                             DataSnapshot itemsSnapshot = orderSnapshot.child("items");
-                            String orderRestaurantId = null;
+                            Set<String> restaurantsInThisOrder = new HashSet<>();
 
                             if (itemsSnapshot.exists()) {
-                                // Find restaurant ID from first dish
                                 for (DataSnapshot itemSnapshot : itemsSnapshot.getChildren()) {
+                                    totalItemsProcessed++;
                                     String dishId = itemSnapshot.child("id").getValue(String.class);
                                     String dishName = itemSnapshot.child("name").getValue(String.class);
                                     Integer quantity = itemSnapshot.child("quantity").getValue(Integer.class);
+                                    if (quantity == null) quantity = 1;
 
                                     // Track dish popularity
-                                    if (dishName != null && quantity != null) {
+                                    if (dishName != null) {
                                         dishOrderCount.put(dishName, dishOrderCount.getOrDefault(dishName, 0) + quantity);
                                     }
 
                                     // Find restaurant for this dish
-                                    if (dishId != null && orderRestaurantId == null) {
-                                        for (DataSnapshot restSnapshot : snapshot.child("Dishes").getChildren()) {
-                                            if (restSnapshot.hasChild(dishId)) {
-                                                orderRestaurantId = restSnapshot.getKey();
-                                                break;
+                                    if (dishId != null) {
+                                        String restaurantId = dishToRestaurantMap.get(dishId);
+                                        if (restaurantId != null) {
+                                            restaurantsInThisOrder.add(restaurantId);
+
+                                            String restaurantName = restaurantNames.get(restaurantId);
+                                            String category = restaurantCategories.get(restaurantId);
+                                            String location = restaurantLocations.get(restaurantId);
+
+                                            // Add revenue to restaurant
+                                            if (restaurantName != null) {
+                                                revenueByRestaurant.put(restaurantName,
+                                                        revenueByRestaurant.getOrDefault(restaurantName, 0.0) + (totalAmount / restaurantsInThisOrder.size()));
                                             }
+
+                                            // Count category for each item
+                                            if (category != null) {
+                                                ordersByCategory.put(category,
+                                                        ordersByCategory.getOrDefault(category, 0) + quantity);
+                                                Log.d(TAG, "Added " + quantity + " to category " + category + " from dish " + dishName);
+                                            }
+                                        } else {
+                                            Log.d(TAG, "No restaurant found for dish: " + dishId);
                                         }
                                     }
                                 }
+                            }
 
-                                // Assign revenue and category to restaurant
-                                if (orderRestaurantId != null) {
-                                    String restName = restaurantNames.get(orderRestaurantId);
-                                    String category = restaurantCategories.get(orderRestaurantId);
-                                    String location = restaurantLocations.get(orderRestaurantId);
-
-                                    if (restName != null) {
-                                        revenueByRestaurant.put(restName,
-                                                revenueByRestaurant.getOrDefault(restName, 0.0) + totalAmount);
-                                    }
-
-                                    if (category != null) {
-                                        ordersByCategory.put(category,
-                                                ordersByCategory.getOrDefault(category, 0) + 1);
-                                    }
-
-                                    if (location != null) {
-                                        ordersByCity.put(location,
-                                                ordersByCity.getOrDefault(location, 0) + 1);
-                                    }
+                            // Count cities based on restaurants in this order
+                            for (String restaurantId : restaurantsInThisOrder) {
+                                String location = restaurantLocations.get(restaurantId);
+                                if (location != null) {
+                                    ordersByCity.put(location, ordersByCity.getOrDefault(location, 0) + 1);
+                                    Log.d(TAG, "Added order count for city: " + location);
                                 }
                             }
                         }
                     }
                 }
+
+                Log.d(TAG, "Total orders processed: " + totalOrdersProcessed);
+                Log.d(TAG, "Total items processed: " + totalItemsProcessed);
 
                 // Process user preferences
                 DataSnapshot prefsSnapshot = snapshot.child("UserPreferences");
@@ -215,40 +246,19 @@ public class AdminStatisticsActivity extends AppCompatActivity {
                     }
                 }
 
-                // Process reviews for ratings
-                DataSnapshot reviewsSnapshot = snapshot.child("Reviews");
-                if (reviewsSnapshot.exists()) {
-                    Map<String, List<Float>> ratingsByRestaurant = new HashMap<>();
-                    for (DataSnapshot review : reviewsSnapshot.getChildren()) {
-                        String restId = review.child("restaurantId").getValue(String.class);
-                        Float rating = review.child("adjustedRating").getValue(Float.class);
-                        if (rating == null) {
-                            rating = review.child("rating").getValue(Float.class);
-                        }
+                // DEBUG: Print all counts
+                Log.d(TAG, "=== FINAL COUNTS ===");
+                Log.d(TAG, "Orders by Category: " + ordersByCategory);
+                Log.d(TAG, "Orders by City: " + ordersByCity);
+                Log.d(TAG, "Restaurant Ratings: " + restaurantRatings);
+                Log.d(TAG, "Dish Order Count: " + dishOrderCount);
+                Log.d(TAG, "Revenue by Restaurant: " + revenueByRestaurant);
 
-                        if (restId != null && rating != null) {
-                            String restName = restaurantNames.get(restId);
-                            if (restName != null) {
-                                if (!ratingsByRestaurant.containsKey(restName)) {
-                                    ratingsByRestaurant.put(restName, new ArrayList<>());
-                                }
-                                ratingsByRestaurant.get(restName).add(rating);
-                            }
-                        }
-                    }
-
-                    // Calculate average ratings
-                    for (Map.Entry<String, List<Float>> entry : ratingsByRestaurant.entrySet()) {
-                        List<Float> ratings = entry.getValue();
-                        if (!ratings.isEmpty()) {
-                            float sum = 0;
-                            for (Float rating : ratings) {
-                                sum += rating;
-                            }
-                            restaurantRatings.put(entry.getKey(), sum / ratings.size());
-                        }
-                    }
-                }
+                // Show debug info in Toast
+                StringBuilder debugInfo = new StringBuilder();
+                debugInfo.append("Categories: ").append(ordersByCategory).append("\n");
+                debugInfo.append("Cities: ").append(ordersByCity);
+                Toast.makeText(AdminStatisticsActivity.this, debugInfo.toString(), Toast.LENGTH_LONG).show();
 
                 // Filter out zero values
                 Map<String, Double> filteredRevenue = filterZeroValues(revenueByRestaurant);
@@ -269,6 +279,7 @@ public class AdminStatisticsActivity extends AppCompatActivity {
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
+                Log.e(TAG, "Database error: " + error.getMessage());
                 Toast.makeText(AdminStatisticsActivity.this,
                         "Failed to load statistics: " + error.getMessage(), Toast.LENGTH_SHORT).show();
             }

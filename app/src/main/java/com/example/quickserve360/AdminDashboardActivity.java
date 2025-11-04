@@ -21,10 +21,10 @@ public class AdminDashboardActivity extends AppCompatActivity {
     private CardView viewStatsCard, logoutCard;
     private TextView totalOrdersText, totalRevenueText, totalRestaurantsText;
     private DatabaseReference databaseReference;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getSupportActionBar().hide();
         setContentView(R.layout.activity_admin_dashboard);
 
         databaseReference = FirebaseDatabase.getInstance().getReference();

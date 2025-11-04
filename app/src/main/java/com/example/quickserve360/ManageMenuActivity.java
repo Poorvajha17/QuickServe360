@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -36,17 +37,24 @@ public class ManageMenuActivity extends AppCompatActivity {
     private MenuAdapter adapter;
     private List<Dish> dishList;
     private String restaurantId, restaurantName;
+    private ImageButton btnBackArrow;
+    private TextView menuTitleText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getSupportActionBar().hide();
         setContentView(R.layout.activity_manage_menu);
 
         restaurantId = getIntent().getStringExtra("restaurantId");
         restaurantName = getIntent().getStringExtra("restaurantName");
 
-        getSupportActionBar().setTitle("Menu - " + restaurantName);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        // Initialize back button and title
+        btnBackArrow = findViewById(R.id.btnBackArrow);
+        menuTitleText = findViewById(R.id.menu_title_text);
+
+        btnBackArrow.setOnClickListener(v -> finish());
+        menuTitleText.setText("Menu - " + restaurantName);
 
         menuRecyclerView = findViewById(R.id.menu_recycler_view);
         addDishFab = findViewById(R.id.add_dish_fab);

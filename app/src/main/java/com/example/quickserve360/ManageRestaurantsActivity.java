@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -36,14 +37,17 @@ public class ManageRestaurantsActivity extends AppCompatActivity {
     private DatabaseReference databaseReference;
     private RestaurantAdapter adapter;
     private List<Restaurant> restaurantList;
+    private ImageButton btnBackArrow;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getSupportActionBar().hide();
         setContentView(R.layout.activity_manage_restaurants);
 
-        getSupportActionBar().setTitle("Manage Restaurants");
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        // Initialize back button
+        btnBackArrow = findViewById(R.id.btnBackArrow);
+        btnBackArrow.setOnClickListener(v -> finish());
 
         restaurantsRecyclerView = findViewById(R.id.restaurants_recycler_view);
         addRestaurantFab = findViewById(R.id.add_restaurant_fab);
@@ -60,7 +64,6 @@ public class ManageRestaurantsActivity extends AppCompatActivity {
 
         addRestaurantFab.setOnClickListener(v -> showAddRestaurantDialog());
     }
-
     private void loadRestaurants() {
         databaseReference.addValueEventListener(new ValueEventListener() {
             @Override
@@ -131,7 +134,8 @@ public class ManageRestaurantsActivity extends AppCompatActivity {
                                 if (num > maxNum) {
                                     maxNum = num;
                                 }
-                            } catch (NumberFormatException ignored) {}
+                            } catch (NumberFormatException ignored) {
+                            }
                         }
                     }
 
@@ -193,7 +197,8 @@ public class ManageRestaurantsActivity extends AppCompatActivity {
         public boolean isVeg;
         public boolean isBestRestaurant;
 
-        public Restaurant() {}
+        public Restaurant() {
+        }
     }
 
     // ✅ Adapter Class

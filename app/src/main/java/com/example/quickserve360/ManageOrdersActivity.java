@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -31,14 +32,17 @@ public class ManageOrdersActivity extends AppCompatActivity {
     private DatabaseReference ordersReference;
     private OrderAdapter adapter;
     private List<OrderInfo> orderList;
+    private ImageButton btnBackArrow;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getSupportActionBar().hide();
         setContentView(R.layout.activity_manage_orders);
 
-        getSupportActionBar().setTitle("Manage Orders");
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        // Initialize back button
+        btnBackArrow = findViewById(R.id.btnBackArrow);
+        btnBackArrow.setOnClickListener(v -> finish());
 
         ordersRecyclerView = findViewById(R.id.orders_recycler_view);
         ordersReference = FirebaseDatabase.getInstance().getReference("orders");

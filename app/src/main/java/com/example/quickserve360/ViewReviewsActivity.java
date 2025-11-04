@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -31,14 +32,17 @@ public class ViewReviewsActivity extends AppCompatActivity {
     private DatabaseReference reviewsReference;
     private ReviewAdapter adapter;
     private List<ReviewInfo> reviewList;
+    private ImageButton btnBackArrow;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getSupportActionBar().hide();
         setContentView(R.layout.activity_view_reviews);
 
-        getSupportActionBar().setTitle("Restaurant Reviews");
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        // Initialize back button
+        btnBackArrow = findViewById(R.id.btnBackArrow);
+        btnBackArrow.setOnClickListener(v -> finish());
 
         reviewsRecyclerView = findViewById(R.id.reviews_recycler_view);
         reviewsReference = FirebaseDatabase.getInstance().getReference("Reviews");
@@ -51,7 +55,6 @@ public class ViewReviewsActivity extends AppCompatActivity {
 
         loadReviews();
     }
-
     private void loadReviews() {
         reviewsReference.addValueEventListener(new ValueEventListener() {
             @Override
