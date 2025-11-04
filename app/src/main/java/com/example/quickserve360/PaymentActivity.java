@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.*;
 import androidx.appcompat.app.AppCompatActivity;
+import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.*;
 
@@ -18,6 +19,7 @@ public class PaymentActivity extends AppCompatActivity {
     private TextView txtFinalAmount;
     private RadioGroup radioPaymentMethod;
     private Button btnConfirmPayment, btnCancel;
+    private TextInputEditText etFullName, etPhone, etAddress, etCity, etPincode, etLandmark;
     private double totalAmount;
     private int cartItemsCount;
 
@@ -30,6 +32,7 @@ public class PaymentActivity extends AppCompatActivity {
         setContentView(R.layout.activity_payment);
 
         initializeViews();
+        initializeFirebase();
         loadCartItems();
         setupClickListeners();
     }
@@ -41,6 +44,14 @@ public class PaymentActivity extends AppCompatActivity {
         btnConfirmPayment = findViewById(R.id.btnConfirmPayment);
         btnCancel = findViewById(R.id.btnCancel);
 
+        // Initialize address fields
+        etFullName = findViewById(R.id.etFullName);
+        etPhone = findViewById(R.id.etPhone);
+        etAddress = findViewById(R.id.etAddress);
+        etCity = findViewById(R.id.etCity);
+        etPincode = findViewById(R.id.etPincode);
+        etLandmark = findViewById(R.id.etLandmark);
+
         // Get data from intent
         totalAmount = getIntent().getDoubleExtra("TOTAL_AMOUNT", 0);
         cartItemsCount = getIntent().getIntExtra("CART_ITEMS_COUNT", 0);
@@ -48,12 +59,19 @@ public class PaymentActivity extends AppCompatActivity {
         txtFinalAmount.setText("Total: ₹" + (int) totalAmount);
     }
 
-    private void loadCartItems() {
+    private void initializeFirebase() {
         String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+        // Cart reference under users/{userId}/cart
         cartRef = FirebaseDatabase.getInstance().getReference("users")
                 .child(userId)
                 .child("cart");
 
+        // Orders reference at ROOT level orders/{userId}/{orderId}
+        ordersRef = FirebaseDatabase.getInstance().getReference("orders");
+    }
+
+    private void loadCartItems() {
         cartRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
@@ -101,6 +119,11 @@ public class PaymentActivity extends AppCompatActivity {
     }
 
     private void processPayment() {
+        // Validate address fields
+        if (!validateAddressFields()) {
+            return;
+        }
+
         int selectedId = radioPaymentMethod.getCheckedRadioButtonId();
         String paymentMethod = getPaymentMethod(selectedId);
 
@@ -116,6 +139,67 @@ public class PaymentActivity extends AppCompatActivity {
         }
     }
 
+    private boolean validateAddressFields() {
+        String fullName = etFullName.getText().toString().trim();
+        String phone = etPhone.getText().toString().trim();
+        String address = etAddress.getText().toString().trim();
+        String city = etCity.getText().toString().trim();
+        String pincode = etPincode.getText().toString().trim();
+
+        if (fullName.isEmpty()) {
+            etFullName.setError("Full name is required");
+            etFullName.requestFocus();
+            return false;
+        }
+
+        if (phone.isEmpty()) {
+            etPhone.setError("Phone number is required");
+            etPhone.requestFocus();
+            return false;
+        }
+
+        if (phone.length() != 10) {
+            etPhone.setError("Enter valid 10-digit phone number");
+            etPhone.requestFocus();
+            return false;
+        }
+
+        if (address.isEmpty()) {
+            etAddress.setError("Address is required");
+            etAddress.requestFocus();
+            return false;
+        }
+
+        if (city.isEmpty()) {
+            etCity.setError("City is required");
+            etCity.requestFocus();
+            return false;
+        }
+
+        if (pincode.isEmpty()) {
+            etPincode.setError("Pincode is required");
+            etPincode.requestFocus();
+            return false;
+        }
+
+        if (pincode.length() != 6) {
+            etPincode.setError("Enter valid 6-digit pincode");
+            etPincode.requestFocus();
+            return false;
+        }
+
+        return true;
+    }
+
+    private String getDeliveryAddressString() {
+        return etFullName.getText().toString().trim() + ", " +
+                etAddress.getText().toString().trim() + ", " +
+                etCity.getText().toString().trim() + " - " +
+                etPincode.getText().toString().trim() +
+                (etLandmark.getText().toString().trim().isEmpty() ? "" :
+                        ", Near " + etLandmark.getText().toString().trim());
+    }
+
     private void processOnlinePayment(String paymentMethod) {
         // For now, we'll simulate online payment success
         // In real app, integrate with Razorpay, Stripe, etc.
@@ -128,7 +212,9 @@ public class PaymentActivity extends AppCompatActivity {
     private void completeOrder(String paymentMethod) {
         String orderId = generateOrderId();
         String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        String deliveryAddress = getDeliveryAddressString();
 
+        // Create order object with all details
         Order order = new Order(
                 orderId,
                 userId,
@@ -136,20 +222,22 @@ public class PaymentActivity extends AppCompatActivity {
                 totalAmount,
                 paymentMethod,
                 "Pending",
-                new SimpleDateFormat("dd-MM-yyyy HH:mm", Locale.getDefault()).format(new Date())
+                new SimpleDateFormat("dd-MM-yyyy HH:mm", Locale.getDefault()).format(new Date()),
+                deliveryAddress
         );
 
-        // Save order to database
-        ordersRef = FirebaseDatabase.getInstance().getReference("orders");
+        // Save to Firebase at: orders/{userId}/{orderId}
         ordersRef.child(userId).child(orderId).setValue(order)
                 .addOnSuccessListener(aVoid -> {
-                    // Clear cart after successful order
+                    // Clear the cart after successful order
                     clearCart();
 
                     // Navigate to order confirmation
                     Intent intent = new Intent(PaymentActivity.this, OrderConfirmationActivity.class);
                     intent.putExtra("ORDER_ID", orderId);
                     intent.putExtra("TOTAL_AMOUNT", totalAmount);
+                    intent.putExtra("PAYMENT_METHOD", paymentMethod);
+                    intent.putExtra("DELIVERY_ADDRESS", deliveryAddress);
                     startActivity(intent);
                     finish();
                 })
@@ -171,6 +259,13 @@ public class PaymentActivity extends AppCompatActivity {
     }
 
     private void clearCart() {
-        cartRef.removeValue();
+        cartRef.removeValue()
+                .addOnSuccessListener(aVoid -> {
+                    // Cart cleared successfully
+                })
+                .addOnFailureListener(e -> {
+                    // Log error but don't block order completion
+                    Toast.makeText(this, "Note: Cart not cleared automatically", Toast.LENGTH_SHORT).show();
+                });
     }
 }

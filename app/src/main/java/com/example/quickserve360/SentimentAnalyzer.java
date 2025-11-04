@@ -5,26 +5,41 @@ import android.util.Log;
 
 import org.tensorflow.lite.task.text.nlclassifier.NLClassifier;
 import java.io.IOException;
+import java.util.List;
 
 public class SentimentAnalyzer {
     private static final String TAG = "SentimentAnalyzer-TF";
     private Context context;
     private NLClassifier classifier;
 
-    // Model file path in assets folder
-    private static final String MODEL_FILE = "universal-sentence-encoder-qa.tflite";
+    // IMPORTANT: Use a proper sentiment analysis model
+    // Download from: https://www.tensorflow.org/lite/examples/text_classification/overview
+    // Recommended: "text_classification.tflite" or "sentiment_analysis.tflite"
+    private static final String MODEL_FILE = "text_classification.tflite";
 
-    // Fallback: Sentiment word dictionary (used if TensorFlow model fails)
+    // Enhanced sentiment word dictionary
     private static final String[] POSITIVE_WORDS = {
             "excellent", "amazing", "fantastic", "wonderful", "delicious",
             "awesome", "perfect", "love", "best", "outstanding", "great",
-            "good", "nice", "fresh", "tasty", "enjoyed", "impressed"
+            "good", "nice", "fresh", "tasty", "enjoyed", "impressed",
+            "recommend", "superb", "brilliant", "yummy", "lovely",
+            "favorite", "happy", "satisfied", "quality", "friendly",
+            "fast", "clean", "comfortable", "beautiful", "pleasant"
     };
 
     private static final String[] NEGATIVE_WORDS = {
             "terrible", "horrible", "awful", "disgusting", "worst", "bad",
             "poor", "disappointing", "hate", "gross", "tasteless", "rude",
-            "slow", "dirty", "cold", "stale", "bland"
+            "slow", "dirty", "cold", "stale", "bland", "overpriced",
+            "unhappy", "disappointing", "unsatisfied", "nasty", "mediocre",
+            "average", "waste", "never", "avoid", "regret", "unfortunate"
+    };
+
+    // Negation words that flip sentiment
+    private static final String[] NEGATION_WORDS = {
+            "not", "no", "never", "neither", "nobody", "nothing",
+            "nowhere", "hardly", "barely", "doesn't", "don't",
+            "didn't", "won't", "wouldn't", "can't", "cannot"
     };
 
     public SentimentAnalyzer(Context context) {
@@ -36,6 +51,9 @@ public class SentimentAnalyzer {
      * Initialize TensorFlow Lite Model
      */
     private void initializeModel() {
+        // Skip TensorFlow for now - use keyword analysis
+        // Uncomment below when you have a proper sentiment model
+        /*
         try {
             classifier = NLClassifier.createFromFile(context, MODEL_FILE);
             Log.d(TAG, "TensorFlow Lite model loaded successfully");
@@ -44,6 +62,9 @@ public class SentimentAnalyzer {
             Log.w(TAG, "Falling back to keyword-based analysis");
             classifier = null;
         }
+        */
+        classifier = null;
+        Log.d(TAG, "Using enhanced keyword-based sentiment analysis");
     }
 
     /**
@@ -71,138 +92,189 @@ public class SentimentAnalyzer {
                 callback.onSentimentAnalyzed(result);
             } catch (Exception e) {
                 Log.e(TAG, "Sentiment analysis error: " + e.getMessage());
-                callback.onSentimentAnalyzed(new SentimentResult(0.5f, "NEUTRAL", 0));
+                // Use keyword fallback on error
+                SentimentResult fallbackResult = analyzeSentimentWithKeywords(reviewText);
+                callback.onSentimentAnalyzed(fallbackResult);
             }
         }).start();
     }
 
     /**
      * TensorFlow Lite Classification
-     * Uses pre-trained neural network model for text classification
      */
     private SentimentResult analyzeSentimentWithTensorFlow(String reviewText) {
         try {
-            // TensorFlow Lite returns classification results
-            // Most text classification models return: [negative_score, positive_score]
-
-            // For this implementation, we use a simple approach:
-            // Score text and get predictions
             String processedText = reviewText.toLowerCase().trim();
 
-            // TensorFlow Lite typically returns probabilities
-            // We'll use a simple scoring based on the model's output
-            float sentimentScore = classifyTextWithModel(processedText);
+            // Use TensorFlow Lite NLClassifier
+            List<org.tensorflow.lite.support.label.Category> results = classifier.classify(processedText);
 
-            String label = classifySentiment(sentimentScore);
+            if (results != null && !results.isEmpty()) {
+                // Most sentiment models return categories like "Positive" and "Negative"
+                float positiveScore = 0f;
+                float negativeScore = 0f;
 
-            Log.d(TAG, "TensorFlow Analysis - Text: " +
-                    processedText.substring(0, Math.min(50, processedText.length())) +
-                    " | Score: " + sentimentScore + " | Label: " + label);
+                for (org.tensorflow.lite.support.label.Category category : results) {
+                    String label = category.getLabel().toLowerCase();
+                    float score = category.getScore();
 
-            return new SentimentResult(sentimentScore, label, 1);
+                    if (label.contains("positive") || label.equals("1")) {
+                        positiveScore = score;
+                    } else if (label.contains("negative") || label.equals("0")) {
+                        negativeScore = score;
+                    }
+                }
+
+                // Calculate sentiment score (0 = negative, 1 = positive)
+                float sentimentScore = positiveScore;
+                String label = classifySentiment(sentimentScore);
+
+                Log.d(TAG, "TensorFlow Analysis - Positive: " + positiveScore +
+                        " | Negative: " + negativeScore + " | Final Score: " + sentimentScore);
+
+                return new SentimentResult(sentimentScore, label, 1);
+            } else {
+                // Fallback if model doesn't return results
+                Log.w(TAG, "TensorFlow model returned no results, using keyword fallback");
+                return analyzeSentimentWithKeywords(reviewText);
+            }
         } catch (Exception e) {
             Log.e(TAG, "TensorFlow classification error: " + e.getMessage());
-            return new SentimentResult(0.5f, "NEUTRAL", 0);
+            return analyzeSentimentWithKeywords(reviewText);
         }
     }
 
     /**
-     * Classify text using TensorFlow Lite model
-     * Returns score: 0 (negative) to 1 (positive)
+     * Enhanced keyword-based sentiment analysis with negation handling
      */
-    private float classifyTextWithModel(String text) {
-        try {
-            if (classifier == null) {
-                return 0.5f;
+    private SentimentResult analyzeSentimentWithKeywords(String reviewText) {
+        String text = reviewText.toLowerCase();
+        String[] words = text.split("\\s+");
+
+        int positiveCount = 0;
+        int negativeCount = 0;
+
+        // Track negation
+        boolean negationActive = false;
+        int negationWindow = 0;
+
+        for (int i = 0; i < words.length; i++) {
+            String word = words[i].replaceAll("[^a-z]", "");
+
+            // Check for negation words
+            if (isNegationWord(word)) {
+                negationActive = true;
+                negationWindow = 3; // Negation affects next 3 words
+                continue;
             }
 
-            // TensorFlow Lite NLClassifier returns results
-            // The exact implementation depends on your model
-            // Most sentiment models return: [negative, positive] probabilities
+            // Check sentiment
+            boolean isPositive = isPositiveWord(word);
+            boolean isNegative = isNegativeWord(word);
 
-            // For universal-sentence-encoder, we use semantic similarity
-            // Compare with positive and negative reference texts
+            if (isPositive || isNegative) {
+                if (negationActive) {
+                    // Flip sentiment due to negation
+                    if (isPositive) {
+                        negativeCount++;
+                    } else {
+                        positiveCount++;
+                    }
+                } else {
+                    // Normal sentiment
+                    if (isPositive) {
+                        positiveCount++;
+                    } else {
+                        negativeCount++;
+                    }
+                }
+            }
 
-            String positiveReference = "excellent amazing wonderful delicious perfect";
-            String negativeReference = "terrible horrible awful disgusting worst";
-
-            // Calculate similarity scores (this is a simplified approach)
-            float positiveScore = calculateSemanticSimilarity(text, positiveReference);
-            float negativeScore = calculateSemanticSimilarity(text, negativeReference);
-
-            // Normalize to 0-1 range
-            float totalScore = positiveScore + negativeScore;
-            float sentimentScore = totalScore > 0 ? positiveScore / totalScore : 0.5f;
-
-            return sentimentScore;
-        } catch (Exception e) {
-            Log.e(TAG, "Model classification error: " + e.getMessage());
-            return 0.5f;
-        }
-    }
-
-    /**
-     * Calculate semantic similarity between two texts (simplified)
-     */
-    private float calculateSemanticSimilarity(String text1, String text2) {
-        String[] words1 = text1.toLowerCase().split("\\s+");
-        String[] words2 = text2.toLowerCase().split("\\s+");
-
-        int matchCount = 0;
-        for (String w1 : words1) {
-            for (String w2 : words2) {
-                if (w1.equals(w2)) {
-                    matchCount++;
+            // Decrease negation window
+            if (negationActive) {
+                negationWindow--;
+                if (negationWindow <= 0) {
+                    negationActive = false;
                 }
             }
         }
 
-        // Jaccard similarity
-        int unionSize = words1.length + words2.length - matchCount;
-        return unionSize > 0 ? (float) matchCount / unionSize : 0f;
-    }
+        // Calculate sentiment score with improved formula
+        float totalWords = positiveCount + negativeCount;
+        float sentimentScore;
 
-    /**
-     * Fallback: Keyword-based sentiment analysis
-     * Used when TensorFlow model is not available
-     */
-    private SentimentResult analyzeSentimentWithKeywords(String reviewText) {
-        String text = reviewText.toLowerCase();
+        if (totalWords == 0) {
+            // No sentiment words found - analyze overall tone
+            sentimentScore = 0.5f; // Neutral
+        } else {
+            // Score based on ratio of positive to total sentiment words
+            sentimentScore = (float) positiveCount / totalWords;
+        }
 
-        int positiveCount = countKeywords(text, POSITIVE_WORDS);
-        int negativeCount = countKeywords(text, NEGATIVE_WORDS);
-
-        float baseScore = 0.5f;
-        float adjustment = (positiveCount - negativeCount) * 0.05f;
-        float sentimentScore = Math.max(0f, Math.min(1f, baseScore + adjustment));
+        // Apply intensity multiplier based on total sentiment words
+        if (totalWords > 0) {
+            float intensity = Math.min(totalWords / 5f, 1f); // Max intensity at 5+ words
+            // Push score away from neutral based on intensity
+            if (sentimentScore > 0.5f) {
+                sentimentScore = 0.5f + (sentimentScore - 0.5f) * (0.5f + intensity * 0.5f);
+            } else {
+                sentimentScore = 0.5f - (0.5f - sentimentScore) * (0.5f + intensity * 0.5f);
+            }
+        }
 
         String label = classifySentiment(sentimentScore);
 
-        Log.d(TAG, "Keyword Analysis - Positive: " + positiveCount +
-                " | Negative: " + negativeCount + " | Score: " + sentimentScore);
+        Log.d(TAG, "Keyword Analysis - Text: \"" +
+                reviewText.substring(0, Math.min(50, reviewText.length())) + "\"");
+        Log.d(TAG, "Positive: " + positiveCount + " | Negative: " + negativeCount +
+                " | Score: " + sentimentScore + " | Label: " + label);
 
         return new SentimentResult(sentimentScore, label, 1);
     }
 
     /**
-     * Count keyword occurrences
+     * Check if word is a negation word
      */
-    private int countKeywords(String text, String[] keywords) {
-        int count = 0;
-        for (String keyword : keywords) {
-            String pattern = "\\b" + keyword + "\\b";
-            count += text.split(pattern, -1).length - 1;
+    private boolean isNegationWord(String word) {
+        for (String negation : NEGATION_WORDS) {
+            if (word.equals(negation)) {
+                return true;
+            }
         }
-        return count;
+        return false;
     }
 
     /**
-     * Classify sentiment based on score
+     * Check if word is positive
+     */
+    private boolean isPositiveWord(String word) {
+        for (String positive : POSITIVE_WORDS) {
+            if (word.equals(positive)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Check if word is negative
+     */
+    private boolean isNegativeWord(String word) {
+        for (String negative : NEGATIVE_WORDS) {
+            if (word.equals(negative)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Classify sentiment based on score with adjusted thresholds
      */
     private String classifySentiment(float score) {
-        if (score >= 0.65f) {
+        if (score >= 0.6f) {
             return "POSITIVE";
-        } else if (score <= 0.35f) {
+        } else if (score <= 0.4f) {
             return "NEGATIVE";
         } else {
             return "NEUTRAL";
@@ -211,7 +283,6 @@ public class SentimentAnalyzer {
 
     /**
      * Calculate adjusted restaurant rating
-     * Formula: Final_Rating = User_Rating + (Sentiment_Score - 0.5) × 0.5
      */
     public float calculateAdjustedRating(float userRating, float sentimentScore) {
         float adjustment = (sentimentScore - 0.5f) * 0.5f;
@@ -236,7 +307,7 @@ public class SentimentAnalyzer {
      * Result class containing ML prediction
      */
     public static class SentimentResult {
-        public float score;      // ML output: 0-1
+        public float score;      // 0-1 (0=negative, 1=positive)
         public String label;     // POSITIVE, NEGATIVE, NEUTRAL
         public int status;       // 1 = success, 0 = failed
 
