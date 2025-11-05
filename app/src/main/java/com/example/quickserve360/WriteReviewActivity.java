@@ -29,6 +29,7 @@ public class WriteReviewActivity extends AppCompatActivity {
     private FirebaseDatabase database = FirebaseDatabase.getInstance();
     private FirebaseAuth auth = FirebaseAuth.getInstance();
     private SentimentAnalyzer sentimentAnalyzer;
+    private RatingCalculator ratingCalculator;
 
     private String restaurantId;
     private String restaurantName;
@@ -39,8 +40,9 @@ public class WriteReviewActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_write_review);
 
-        // Initialize SentimentAnalyzer first
+        // Initialize analyzers
         sentimentAnalyzer = new SentimentAnalyzer(this);
+        ratingCalculator = new RatingCalculator();
 
         restaurantId = getIntent().getStringExtra("restaurantId");
         restaurantName = getIntent().getStringExtra("restaurantName");
@@ -112,19 +114,41 @@ public class WriteReviewActivity extends AppCompatActivity {
         DatabaseReference reviewsRef = database.getReference("Reviews").child(reviewId);
         reviewsRef.setValue(review)
                 .addOnSuccessListener(aVoid -> {
-                    setUIState(false);
-                    String message = "✅ Review submitted!";
-                    if (!sentiment.label.equals("NEUTRAL")) {
-                        message += " Sentiment: " + sentiment.label;
-                    }
-                    Toast.makeText(this, message, Toast.LENGTH_LONG).show();
-                    finish();
+                    Log.d(TAG, "✅ Review saved, now updating restaurant rating...");
+                    tvAnalysisStatus.setText("Updating restaurant rating...");
+
+                    // Update restaurant rating after review is saved
+                    updateRestaurantRating(sentiment);
                 })
                 .addOnFailureListener(e -> {
                     setUIState(false);
                     Toast.makeText(this, "❌ Failed to submit review", Toast.LENGTH_SHORT).show();
                     Log.e(TAG, "Firebase save error: " + e.getMessage());
                 });
+    }
+
+    private void updateRestaurantRating(SentimentAnalyzer.SentimentResult sentiment) {
+        ratingCalculator.updateRestaurantRating(restaurantId, (success, message) -> {
+            runOnUiThread(() -> {
+                setUIState(false);
+
+                if (success) {
+                    String toastMessage = "✅ Review submitted & rating updated!";
+                    if (!sentiment.label.equals("NEUTRAL")) {
+                        toastMessage += "\nSentiment: " + sentiment.label;
+                    }
+                    Toast.makeText(this, toastMessage, Toast.LENGTH_LONG).show();
+                    Log.d(TAG, "✅ Restaurant rating updated successfully");
+                } else {
+                    // Review was saved but rating update failed
+                    Toast.makeText(this, "Review submitted (rating update pending)",
+                            Toast.LENGTH_LONG).show();
+                    Log.w(TAG, "Rating update failed: " + message);
+                }
+
+                finish();
+            });
+        });
     }
 
     private String getCurrentUserName() {
@@ -146,7 +170,7 @@ public class WriteReviewActivity extends AppCompatActivity {
         btnBack.setEnabled(!isLoading);
 
         if (isLoading) {
-            btnSubmit.setText("Analyzing...");
+            btnSubmit.setText("Processing...");
         } else {
             btnSubmit.setText("Submit Review");
         }

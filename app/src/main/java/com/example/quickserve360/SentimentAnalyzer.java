@@ -158,7 +158,6 @@ public class SentimentAnalyzer {
     public interface SentimentCallback {
         void onSentimentAnalyzed(SentimentResult result);
     }
-
     public static class SentimentResult {
         public float score;
         public String label;
